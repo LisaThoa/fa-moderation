@@ -9,6 +9,9 @@ window.FA_MODERATION_CONFIG = {
   /* true : les outils ne sont chargés que pour les administrateurs et les modérateurs. */
   staff: true,
 
+  /* true : les outils affichent leurs résultats sans rien modifier sur le forum (pas de déplacement). */
+  lectureSeule: false,
+
   /* true : le plugin attend un appel à FAModeration.init(config), par exemple à l'ouverture d'un panneau. */
   manuel: false,
 
@@ -30,7 +33,8 @@ window.FA_MODERATION_CONFIG = {
        de la période. 0 : aucune exemption. */
     nouveaux: null,
 
-    /* Début de la période proposé par défaut : 'mois' (le 1er du mois) ou un nombre de jours. */
+    /* Début de la période proposé par défaut : 'mois' (le 1er du mois, ou du mois précédent pendant
+       les 7 premiers jours) ou un nombre de jours. */
     periode: 'mois',
 
     /* Membres recensés : vide pour tous les membres, sinon des numéros de groupe (/g3-… → 3). */

@@ -20,6 +20,25 @@ Le plugin tourne sur le forum : ses requêtes partent avec la session de la pers
 | `config.css` | variables d'apparence, à copier dans la feuille de style du forum |
 | `fa-moderation.js` | le plugin |
 | `fa-moderation.css` | la structure, chargée automatiquement depuis le dossier du plugin |
+| `test-footer.js` + `build.py` | de quoi fabriquer `console-test.js` |
+| `console-test.js` | **généré** : tout-en-un à coller dans la console d'un forum |
+
+## Tester sur un forum
+
+`console-test.js` permet d'essayer le recensement sur n'importe quel forum Forumactif, sans rien installer :
+
+1. Ouvrir le forum dans le navigateur, connecté avec le compte habituel.
+2. Ouvrir la console (F12, onglet *Console*), y coller le contenu de `console-test.js`, puis valider.
+3. Un panneau s'ouvre en haut à droite : y indiquer la section ou le sujet des activités, puis lancer.
+
+Le panneau est en **lecture seule** : aucun sujet ne peut être déplacé, et rien n'est modifié sur le forum. Il ne voit que ce que le compte connecté peut voir. Les sections privées des activités ou des absences demandent donc un compte qui y a accès.
+
+Deux signaux aident à repérer un template que le plugin lit mal :
+
+- **nombre de réponses illisible** : les auteurs des sujets concernés sont comptés à jour par défaut ; régler `balisage.reponses` ;
+- **auteurs hors de la liste des membres** : membres exclus, comptes supprimés, ou pseudos mal lus.
+
+Après une modification de `fa-moderation.js`, `fa-moderation.css` ou `test-footer.js`, régénérer le fichier avec `python build.py`.
 
 ## Installation
 
@@ -55,12 +74,13 @@ Deux organisations sont prises en charge, selon ce qui est indiqué dans le cham
 - **une section** : chaque membre y ouvre un sujet où il liste ses RP de la période. Un membre est à jour s'il est l'auteur d'au moins un sujet ayant le nombre de réponses requis (`reponses`, 1 par défaut) ;
 - **un sujet unique** : chaque membre y répond. Un membre est à jour s'il y a posté depuis le début de la période.
 
-Le formulaire propose cinq champs, tous mémorisés dans le navigateur sauf la date :
+Le formulaire propose six champs, tous mémorisés dans le navigateur sauf la date :
 
 - **Activités RP** : section ou sujet unique ;
 - **Archivage** : section où déplacer les sujets de la période ;
 - **Absences** (facultatif) : section ou sujet unique, plusieurs valeurs séparées par des virgules. Dans une section, compte un sujet du membre actif pendant la période ; dans un sujet unique, un message posté pendant la période ;
 - **Délai des nouveaux inscrits** (en jours) : les membres inscrits depuis moins de ce nombre de jours ne sont pas mis en danger. Vide : inscrits depuis le début de la période. 0 : aucune exemption ;
+- **Exclure** : cases des groupes du forum (lus sur `/groups`) et pseudos, avec autocomplétion sur la liste des membres. Sert pour le staff, les PNJ, ou les autres personnages d'un membre absent. S'ajoute à `exclure` dans la configuration ;
 - **Début de la période**.
 
 ### Résultat
@@ -70,7 +90,8 @@ Le formulaire propose cinq champs, tous mémorisés dans le navigateur sauf la d
 - **Absences signalées** : membres ayant signalé une absence pendant la période.
 - **Inscrits depuis le…** : membres exemptés par le délai des nouveaux inscrits.
 - **À jour**, avec le lien vers le ou les sujets.
-- **Archivage** : la liste des sujets de la section (ou le sujet unique), avec des cases à cocher. Les annonces et post-it sont décochés d'office. Le bouton « Déplacer » demande confirmation.
+- **Exclus du recensement**, replié.
+- **Archivage** : la liste des sujets de la section (ou le sujet unique), avec des cases à cocher. Les annonces et notes (post-it) n'y figurent pas : elles sont reconnues au type du sujet, à l'infobulle ou à l'icône de statut (`announce`, `sticky`). Le bouton « Déplacer » demande confirmation.
 
 ### Fonctionnement
 
@@ -89,7 +110,7 @@ Le formulaire propose cinq champs, tous mémorisés dans le navigateur sauf la d
 | `reponses` | `1` | réponses requises dans un sujet d'activité |
 | `absences` | `''` | valeur proposée pour « Absences » (texte ou liste) |
 | `nouveaux` | `null` | valeur proposée pour le délai des nouveaux inscrits, en jours |
-| `periode` | `'mois'` | début proposé : le 1er du mois, ou un nombre de jours |
+| `periode` | `'mois'` | début proposé : le 1er du mois (du mois précédent pendant les 7 premiers jours), ou un nombre de jours |
 | `membres.groupes` | `[]` | restreindre le recensement à ces groupes |
 | `exclure.groupes` | `[]` | groupes ignorés (staff, PNJ, comptes partagés…) |
 | `exclure.membres` | `[]` | pseudos ignorés |
@@ -111,11 +132,13 @@ Les sélecteurs de lecture des sujets sont réglables (`balisage`) pour les temp
 | clé | défaut |
 | --- | --- |
 | `message` | `.post` |
-| `auteur` | `.postprofile a[href^="/u"], .postprofile-name a, .postauthor a, .name a` |
-| `nomAuteur` | `.postprofile-name, .postprofile .name, .postauthor, .name` |
+| `auteur` | `.postprofile a[href^="/u"], .postprofile-name a, .post_pseudo a, .postauthor a, .name a` |
+| `nomAuteur` | `.postprofile-name, .postprofile .name, .post_pseudo, .postauthor, .name` |
 | `date` | `.topic-date, .post-date, .postdetails, .author` |
 | `auteurSujet` | `.topic-author, .topicslist-author, .authorlist, .author` |
 | `reponses` | `.posts, .topicslist-replies, .topics-replies` |
 | `typeSujet` | `.topic-type, .fal-sujet__type` |
+
+Pour les templates entièrement personnalisés, deux replis s'appliquent quand les sélecteurs ne trouvent rien : l'auteur est le premier lien de profil `/uN` du message qui porte un texte, et la date est cherchée dans les éléments dont la classe contient « date » ou « time ».
 
 Les dates sont lues dans les formats de Forumactif : « Aujourd'hui à », « Hier à », « Mer 30 Sep 2026 - 16:22 », sans année, `30/09/2026` et `2026-09-30`.

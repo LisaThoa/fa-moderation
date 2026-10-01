@@ -997,3 +997,48 @@
     else init(config);
   }
 })(window, document);
+
+(function () {
+  if (document.getElementById('fam-css')) return;
+  var s = document.createElement('style');
+  s.id = 'fam-css';
+  s.textContent = ":where(.fam-root) {\n  --fam-texte: inherit;\n  --fam-texte-doux: color-mix(in srgb, currentColor 62%, transparent);\n  --fam-accent: #8a4b2d;\n  --fam-accent-contraste: #ffffff;\n  --fam-trait: 1px;\n  --fam-arrondi: 4px;\n  --fam-espace: 14px;\n  --fam-taille: 14px;\n  --fam-taille-petite: 12px;\n  --fam-taille-titre: 16px;\n}\n.fam-root {\n  display: grid;\n  gap: var(--fam-espace);\n  color: var(--fam-texte);\n  font-size: var(--fam-taille);\n  line-height: 1.45;\n}\n\n/* Les thèmes de forum stylent button, input, summary et les titres sans classe :\n   remise à zéro de ce qui déborde sur le plugin (majuscules, fonds, ombres, marges). */\n.fam-root button,\n.fam-root input,\n.fam-root select,\n.fam-root summary,\n.fam-root h3,\n.fam-root h4 {\n  text-transform: none;\n  letter-spacing: normal;\n  text-shadow: none;\n  box-shadow: none;\n}\n.fam-root button,\n.fam-root input,\n.fam-root select {\n  font: inherit;\n  margin: 0;\n  min-height: 0;\n  height: auto;\n  line-height: 1.3;\n  vertical-align: middle;\n}\n.fam-root input[type=\"text\"],\n.fam-root input[type=\"number\"],\n.fam-root input[type=\"date\"],\n.fam-root select {\n  width: 100%;\n  max-width: 100%;\n  box-sizing: border-box;\n}\n\n.fam-root .fam-module { display: grid; gap: var(--fam-espace); }\n.fam-root .fam-module__titre { margin: 0; font-size: var(--fam-taille-titre); }\n\n.fam-root .fam-formulaire { display: grid; gap: calc(var(--fam-espace) * .75); }\n.fam-root .fam-champ { display: grid; gap: .3em; min-width: 0; }\n.fam-root .fam-champ__nom { margin: 0; font-size: var(--fam-taille-petite); color: var(--fam-texte-doux); }\n.fam-root .fam-champ__aide { font-size: var(--fam-taille-petite); color: var(--fam-texte-doux); }\n\n.fam-root button.fam-bouton {\n  justify-self: start;\n  width: auto;\n  cursor: pointer;\n  padding: .4em .9em;\n  border: var(--fam-trait) solid var(--fam-accent);\n  border-radius: var(--fam-arrondi);\n  background: var(--fam-accent);\n  color: var(--fam-accent-contraste);\n}\n.fam-root button.fam-bouton:disabled { opacity: .5; cursor: progress; }\n.fam-root button.fam-bouton--discret { background: transparent; color: var(--fam-accent); font-size: var(--fam-taille-petite); }\n\n.fam-root .fam-progression,\n.fam-root .fam-resume { margin: 0; }\n.fam-root .fam-progression { color: var(--fam-texte-doux); font-size: var(--fam-taille-petite); }\n.fam-root .fam-alerte {\n  margin: 0;\n  padding: .4em .7em;\n  border-left: 3px solid var(--fam-accent);\n  font-size: var(--fam-taille-petite);\n}\n\n.fam-root .fam-resultats { display: grid; gap: var(--fam-espace); }\n.fam-root .fam-groupe { display: grid; gap: .4em; }\n.fam-root .fam-groupe__titre { margin: 0; padding: 0; border: 0; background: none; color: inherit; font-size: 1em; font-weight: 700; }\n.fam-root details.fam-groupe > summary { cursor: pointer; display: list-item; }\n.fam-root .fam-liste { margin: 0; padding: 0; list-style: none; display: grid; gap: .25em; }\n.fam-root .fam-ligne { display: flex; flex-wrap: wrap; gap: 0 .6em; align-items: baseline; }\n.fam-root .fam-detail,\n.fam-root .fam-vide { margin: 0; color: var(--fam-texte-doux); font-size: var(--fam-taille-petite); }\n.fam-root .fam-outils { display: flex; flex-wrap: wrap; gap: .5em; }\n\n.fam-root .fam-case { display: inline-flex; align-items: center; gap: .45em; cursor: pointer; }\n.fam-root .fam-case input { flex: none; width: auto; accent-color: var(--fam-accent); }\n\n.fam-root .fam-exclusions__groupes {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(10em, 1fr));\n  gap: .3em .8em;\n  max-height: 10em;\n  overflow: auto;\n}\n.fam-root .fam-exclusions__ajout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5em; align-items: center; }\n.fam-root .fam-exclusions__pseudos { display: flex; flex-wrap: wrap; gap: .4em; }\n.fam-root .fam-exclusions__pseudos:empty { display: none; }\n.fam-root .fam-etiquette {\n  display: inline-flex;\n  align-items: center;\n  gap: .2em;\n  padding: .15em .25em .15em .6em;\n  border: var(--fam-trait) solid var(--fam-accent);\n  border-radius: var(--fam-arrondi);\n  font-size: var(--fam-taille-petite);\n  line-height: 1.3;\n}\n.fam-root button.fam-etiquette__retirer {\n  width: auto;\n  padding: 0 .3em;\n  border: 0;\n  border-radius: 0;\n  background: none;\n  color: inherit;\n  cursor: pointer;\n  font-size: 1.1em;\n  line-height: 1;\n}\n.fam-root button.fam-etiquette__retirer:hover { color: var(--fam-accent); }\n";
+  document.head.appendChild(s);
+})();
+
+/* Test en console : un panneau flottant en lecture seule, sur n'importe quel forum Forumactif. */
+(function () {
+  var ancien = document.getElementById('fam-test');
+  if (ancien) ancien.remove();
+
+  var style = document.createElement('style');
+  style.textContent =
+    '#fam-test{position:fixed;top:16px;right:16px;z-index:2147483647;width:min(400px,calc(100vw - 32px));' +
+    'max-height:calc(100vh - 32px);overflow:auto;box-sizing:border-box;padding:14px 16px;background:#fffdf9;color:#26221d;' +
+    'border:1px solid #d9d2c6;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.25);font:14px/1.45 system-ui,sans-serif;text-align:left}' +
+    '#fam-test *{box-sizing:border-box}' +
+    '#fam-test input,#fam-test select{width:100%;padding:5px 8px;border:1px solid #c9c1b4;border-radius:4px;background:#fff;color:#26221d;font:inherit}' +
+    '#fam-test input[type=checkbox]{width:auto}' +
+    '#fam-test a{color:#8a4b2d}' +
+    '#fam-test-entete{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-weight:700}' +
+    '#fam-test-fermer{border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:inherit}';
+  document.head.appendChild(style);
+
+  var boite = document.createElement('div');
+  boite.id = 'fam-test';
+  boite.innerHTML = '<div id="fam-test-entete"><span>fa-moderation · test</span>' +
+    '<button type="button" id="fam-test-fermer" title="Fermer">×</button></div><div id="fam-test-corps"></div>';
+  document.body.appendChild(boite);
+  document.getElementById('fam-test-fermer').onclick = function () { boite.remove(); style.remove(); };
+
+  window.FAModeration.init({
+    staff: false,
+    lectureSeule: true,
+    style: false,
+    emplacement: { cible: '#fam-test-corps' },
+    recensement: {}
+  });
+
+  console.info('[fa-moderation] panneau de test ouvert, en lecture seule : aucun sujet ne peut être déplacé. ' +
+    'Recensement sans interface : FAModeration.recenser({ recensement: {} }, "/f12-activites", new Date(2026, 8, 1)).then(console.log)');
+})();
