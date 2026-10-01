@@ -595,7 +595,7 @@
       return bloc;
     }
 
-    var bouton = el('button', 'fam-bouton', 'Déplacer les sujets coches');
+    var bouton = el('button', 'fam-bouton', 'Déplacer les sujets cochés');
     bouton.type = 'button';
     var etat = el('p', 'fam-progression');
     etat.hidden = true;
