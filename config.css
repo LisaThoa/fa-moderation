@@ -1,0 +1,13 @@
+/* fa-moderation : apparence. À coller dans PA > Affichage > Couleurs > Feuille de style CSS. */
+.fam-root {
+  --fam-texte: inherit;
+  --fam-texte-doux: color-mix(in srgb, currentColor 62%, transparent);
+  --fam-accent: #8a4b2d;
+  --fam-accent-contraste: #ffffff;
+  --fam-trait: 1px;
+  --fam-arrondi: 4px;
+  --fam-espace: 14px;
+  --fam-taille: 14px;
+  --fam-taille-petite: 12px;
+  --fam-taille-titre: 16px;
+}

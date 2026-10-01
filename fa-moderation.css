@@ -1,0 +1,60 @@
+:where(.fam-root) {
+  --fam-texte: inherit;
+  --fam-texte-doux: color-mix(in srgb, currentColor 62%, transparent);
+  --fam-accent: #8a4b2d;
+  --fam-accent-contraste: #ffffff;
+  --fam-trait: 1px;
+  --fam-arrondi: 4px;
+  --fam-espace: 14px;
+  --fam-taille: 14px;
+  --fam-taille-petite: 12px;
+  --fam-taille-titre: 16px;
+}
+.fam-root {
+  display: grid;
+  gap: var(--fam-espace);
+  color: var(--fam-texte);
+  font-size: var(--fam-taille);
+}
+.fam-module { display: grid; gap: var(--fam-espace); }
+.fam-module__titre { margin: 0; font-size: var(--fam-taille-titre); }
+
+.fam-formulaire { display: grid; gap: calc(var(--fam-espace) * .75); }
+.fam-champ { display: grid; gap: .25em; }
+.fam-champ__nom { font-size: var(--fam-taille-petite); color: var(--fam-texte-doux); margin: 0; }
+.fam-formulaire select, .fam-formulaire input { font: inherit; max-width: 100%; }
+
+.fam-bouton {
+  justify-self: start;
+  font: inherit;
+  cursor: pointer;
+  padding: .4em .9em;
+  border: var(--fam-trait) solid var(--fam-accent);
+  border-radius: var(--fam-arrondi);
+  background: var(--fam-accent);
+  color: var(--fam-accent-contraste);
+}
+.fam-bouton:disabled { opacity: .5; cursor: progress; }
+.fam-bouton--discret { background: transparent; color: var(--fam-accent); font-size: var(--fam-taille-petite); }
+
+.fam-progression, .fam-resume { margin: 0; }
+.fam-progression { color: var(--fam-texte-doux); font-size: var(--fam-taille-petite); }
+.fam-alerte {
+  margin: 0;
+  padding: .4em .7em;
+  border-left: 3px solid var(--fam-accent);
+  font-size: var(--fam-taille-petite);
+}
+
+.fam-resultats { display: grid; gap: var(--fam-espace); }
+.fam-groupe { display: grid; gap: .4em; }
+.fam-groupe__titre { margin: 0; font-size: 1em; font-weight: 700; }
+details.fam-groupe > summary { cursor: pointer; }
+.fam-liste { margin: 0; padding: 0; list-style: none; display: grid; gap: .25em; }
+.fam-ligne { display: flex; flex-wrap: wrap; gap: 0 .6em; align-items: baseline; }
+.fam-detail { color: var(--fam-texte-doux); font-size: var(--fam-taille-petite); }
+.fam-vide { margin: 0; color: var(--fam-texte-doux); font-size: var(--fam-taille-petite); }
+.fam-outils { display: flex; flex-wrap: wrap; gap: .5em; }
+.fam-champ__aide { font-size: var(--fam-taille-petite); color: var(--fam-texte-doux); }
+.fam-case { display: inline-flex; flex-wrap: wrap; gap: 0 .5em; align-items: baseline; cursor: pointer; }
+.fam-case input { accent-color: var(--fam-accent); }
