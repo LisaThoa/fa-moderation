@@ -22,8 +22,13 @@ window.FA_MODERATION_CONFIG = {
     /* Mode section : réponses requises dans le sujet d'activité d'un membre. */
     reponses: 1,
 
-    /* Forums des absences : un membre qui y a ouvert un sujet pendant la période est classé à part. */
-    absences: [],
+    /* Valeur proposée pour « Absences » : section ou sujet unique, plusieurs valeurs séparées par des
+       virgules. Section : le membre a un sujet actif pendant la période. Sujet : il y a posté pendant la période. */
+    absences: '',
+
+    /* Valeur proposée pour le délai des nouveaux inscrits, en jours. null : inscrits depuis le début
+       de la période. 0 : aucune exemption. */
+    nouveaux: null,
 
     /* Début de la période proposé par défaut : 'mois' (le 1er du mois) ou un nombre de jours. */
     periode: 'mois',

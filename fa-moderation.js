@@ -7,7 +7,7 @@
 (function (window, document) {
   'use strict';
 
-  var VERSION = '0.2.0';
+  var VERSION = '0.3.0';
   var MON_URL = (document.currentScript && document.currentScript.src) || '';
 
   var DEFAUTS = {
@@ -33,7 +33,8 @@
     activites: '',
     archive: '',
     reponses: 1,
-    absences: [],
+    absences: '',
+    nouveaux: null,
     periode: 'mois',
     membres: { groupes: [] },
     exclure: { groupes: [], membres: [] },
@@ -308,25 +309,48 @@
 
   function cleDe(x) { return x.id ? 'u' + x.id : 'nom:' + String(x.nom).toLowerCase(); }
 
-  function absents(rc, depuis, cfg, charger) {
-    return Promise.all(rc.absences.map(function (v) {
-      var c = cible(v);
-      if (!c || c.type !== 'forum') return [];
-      return sujetsDuForum(c, cfg, charger).catch(function () { return []; });
+  /** « /f12-absences, /t40-absences » ou ['/f12-…', 40] → liste de cibles valides. */
+  function cibles(valeur) {
+    var liste = Array.isArray(valeur) ? valeur : String(valeur || '').split(/[,;\n]+/);
+    return liste.map(cible).filter(Boolean);
+  }
+
+  /** Section : auteurs des sujets actifs depuis `depuis`. Sujet unique : auteurs des messages postés depuis `depuis`. */
+  function absents(sources, depuis, cfg, charger) {
+    return Promise.all(sources.map(function (c) {
+      var lecture = c.type === 'sujet'
+        ? messagesDuSujet(c, depuis, cfg, charger)
+        : sujetsDuForum(c, cfg, charger).then(function (sujets) {
+            return sujets.filter(function (s) { return !s.epingle && (!s.date || s.date >= depuis); })
+              .map(function (s) { return s.auteur; });
+          });
+      return lecture.catch(function (e) {
+        if (window.console) console.warn('[fa-moderation] absences', c.url, e);
+        return [];
+      });
     })).then(function (listes) {
       var vus = {};
-      listes.forEach(function (l) {
-        l.forEach(function (s) { if (!s.date || s.date >= depuis) vus[cleDe(s.auteur)] = 1; });
-      });
+      listes.forEach(function (l) { l.forEach(function (m) { vus[cleDe(m)] = 1; }); });
       return vus;
     });
+  }
+
+  /** Date à partir de laquelle un inscrit est exempté : `jours` vide → début de période, 0 → aucune exemption. */
+  function limiteNouveaux(jours, depuis) {
+    if (jours === '' || jours == null) return depuis;
+    if (+jours <= 0) return null;
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - +jours);
+    return d;
   }
 
   /**
    * Mode section : un membre est à jour s'il est l'auteur d'au moins un sujet de la section
    * ayant le nombre de réponses requis. Mode sujet : s'il a posté dans le sujet depuis `depuis`.
+   * options.absences : cibles des absences ; options.nouveaux : date d'inscription exemptée (ou null).
    */
-  function recenser(cfg, source, depuis) {
+  function recenser(cfg, source, depuis, options) {
     var rc = cfg.recensement;
     var charger = chargeurDe(cfg);
     var activite = source.type === 'sujet'
@@ -341,7 +365,7 @@
           }) };
         });
 
-    return Promise.all([membresDuForum(rc, charger), activite, absents(rc, depuis, cfg, charger)]).then(function (r) {
+    return Promise.all([membresDuForum(rc, charger), activite, absents(options.absences, depuis, cfg, charger)]).then(function (r) {
       var membres = r[0], act = r[1], excuses = r[2];
       var parMembre = {};
       act.contributions.forEach(function (c) {
@@ -356,7 +380,7 @@
         var valide = contributions.some(function (c) { return c.valide; });
         if (valide) bilan.ajour.push(ligne);
         else if (excuses['u' + mb.id] || excuses['nom:' + mb.nom.toLowerCase()]) bilan.absents.push(ligne);
-        else if (mb.inscription && mb.inscription >= depuis) bilan.nouveaux.push(ligne);
+        else if (options.nouveaux && mb.inscription && mb.inscription >= options.nouveaux) bilan.nouveaux.push(ligne);
         else if (contributions.length) bilan.insuffisants.push(ligne);
         else bilan.danger.push(ligne);
       });
@@ -554,7 +578,7 @@
     }, Promise.resolve()).then(function () { return { faits: faits, deja: deja, echecs: echecs }; });
   }
 
-  function afficherBilan(zone, bilan, source, archive, depuis, cfg) {
+  function afficherBilan(zone, bilan, source, archive, depuis, options, cfg) {
     var rc = cfg.recensement;
     zone.textContent = '';
     var exigence = source.type === 'sujet'
@@ -565,10 +589,12 @@
     if (source.type !== 'sujet') {
       zone.appendChild(groupe('Sujet sans réponse suffisante', bilan.insuffisants, rc, { classe: 'insuffisants', copier: true, detail: detailContributions }));
     }
-    if (rc.absences.length) zone.appendChild(groupe('Absences signalées', bilan.absents, rc, { classe: 'absents' }));
-    zone.appendChild(groupe('Inscrits pendant la période', bilan.nouveaux, rc, { classe: 'nouveaux', detail: function (l) {
-      return el('span', 'fam-detail', 'inscrit le ' + dateCourte(l.membre.inscription));
-    } }));
+    if (options.absences.length) zone.appendChild(groupe('Absences signalées', bilan.absents, rc, { classe: 'absents' }));
+    if (options.nouveaux) {
+      zone.appendChild(groupe('Inscrits depuis le ' + dateCourte(options.nouveaux), bilan.nouveaux, rc, { classe: 'nouveaux', detail: function (l) {
+        return el('span', 'fam-detail', 'inscrit le ' + dateCourte(l.membre.inscription));
+      } }));
+    }
     zone.appendChild(groupe('À jour', bilan.ajour, rc, { classe: 'ajour', replie: true, detail: detailContributions }));
     zone.appendChild(blocArchivage(bilan.sujets, archive, cfg));
   }
@@ -611,10 +637,23 @@
     archive.placeholder = '/f2-corbeille';
     champ(form, 'Archivage', 'Section où déplacer les sujets de la période.', archive);
 
+    var absences = el('input');
+    absences.type = 'text';
+    absences.value = reglages.absences != null ? reglages.absences : [].concat(rc.absences || []).join(', ');
+    absences.placeholder = '/f12-absences';
+    champ(form, 'Absences', 'Facultatif. Section ou sujet unique ; plusieurs valeurs séparées par des virgules.', absences);
+
+    var nouveaux = el('input');
+    nouveaux.type = 'number';
+    nouveaux.min = '0';
+    nouveaux.value = reglages.nouveaux != null ? reglages.nouveaux : (rc.nouveaux == null ? '' : String(rc.nouveaux));
+    nouveaux.placeholder = 'début de la période';
+    champ(form, 'Délai des nouveaux inscrits (jours)', 'Les membres inscrits depuis moins de ce nombre de jours ne sont pas mis en danger. Vide : inscrits depuis le début de la période. 0 : aucune exemption.', nouveaux);
+
     var date = el('input');
     date.type = 'date';
     date.value = versChamp(debutPeriode(rc.periode));
-    champ(form, 'Début de la période', 'Sert au mode sujet, aux absences et aux nouveaux inscrits.', date);
+    champ(form, 'Début de la période', 'Sert au mode sujet, aux absences et, par défaut, aux nouveaux inscrits.', date);
 
     var lancer = el('button', 'fam-bouton', 'Lancer le recensement');
     lancer.type = 'submit';
@@ -640,13 +679,19 @@
         resultats.appendChild(el('p', 'fam-alerte', 'Archivage : indiquer le lien ou le numéro d\'une section.'));
         return;
       }
-      ecrireReglages({ activites: activites.value.trim(), archive: archive.value.trim() });
+      var sourcesAbsences = cibles(absences.value);
+      if (absences.value.trim() && !sourcesAbsences.length) {
+        resultats.appendChild(el('p', 'fam-alerte', "Absences : indiquer le lien ou le numéro d'une section, ou le lien d'un sujet."));
+        return;
+      }
+      ecrireReglages({ activites: activites.value.trim(), archive: archive.value.trim(), absences: absences.value.trim(), nouveaux: nouveaux.value.trim() });
       var depuis = date.value ? new Date(date.value + 'T00:00:00') : debutPeriode(rc.periode);
+      var options = { absences: sourcesAbsences, nouveaux: limiteNouveaux(nouveaux.value.trim(), depuis) };
       lancer.disabled = true;
       progression.hidden = false;
       progression.textContent = 'Recensement en cours…';
-      recenser(cfg, source, depuis).then(function (bilan) {
-        afficherBilan(resultats, bilan, source, dest, depuis, cfg);
+      recenser(cfg, source, depuis, options).then(function (bilan) {
+        afficherBilan(resultats, bilan, source, dest, depuis, options, cfg);
       }, function (e) {
         resultats.appendChild(el('p', 'fam-alerte', 'Le recensement a échoué : ' + e.message));
         if (window.console) console.error('[fa-moderation]', e);
@@ -717,7 +762,9 @@
     deplacer: function (ids, forumId, cfgBrute) { return deplacer([].concat(ids).map(String), forumId, preparer(cfgBrute)); },
     recenser: function (cfgBrute, source, depuis) {
       var cfg = preparer(cfgBrute);
-      return recenser(cfg, cible(source || cfg.recensement.activites), depuis || debutPeriode(cfg.recensement.periode));
+      var rc = cfg.recensement;
+      depuis = depuis || debutPeriode(rc.periode);
+      return recenser(cfg, cible(source || rc.activites), depuis, { absences: cibles(rc.absences), nouveaux: limiteNouveaux(rc.nouveaux, depuis) });
     },
     _interne: { dateFr: dateFr, cible: cible, lireSection: lireSection, lireMessages: lireMessages, lireMembres: lireMembres, preparer: preparer }
   };

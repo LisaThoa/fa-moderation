@@ -55,14 +55,20 @@ Deux organisations sont prises en charge, selon ce qui est indiqué dans le cham
 - **une section** : chaque membre y ouvre un sujet où il liste ses RP de la période. Un membre est à jour s'il est l'auteur d'au moins un sujet ayant le nombre de réponses requis (`reponses`, 1 par défaut) ;
 - **un sujet unique** : chaque membre y répond. Un membre est à jour s'il y a posté depuis le début de la période.
 
-Le formulaire propose trois champs : « Activités RP » (section ou sujet), « Archivage » (section) et « Début de la période ». Les deux premiers sont mémorisés dans le navigateur.
+Le formulaire propose cinq champs, tous mémorisés dans le navigateur sauf la date :
+
+- **Activités RP** : section ou sujet unique ;
+- **Archivage** : section où déplacer les sujets de la période ;
+- **Absences** (facultatif) : section ou sujet unique, plusieurs valeurs séparées par des virgules. Dans une section, compte un sujet du membre actif pendant la période ; dans un sujet unique, un message posté pendant la période ;
+- **Délai des nouveaux inscrits** (en jours) : les membres inscrits depuis moins de ce nombre de jours ne sont pas mis en danger. Vide : inscrits depuis le début de la période. 0 : aucune exemption ;
+- **Début de la période**.
 
 ### Résultat
 
 - **En danger** : aucun sujet d'activité (mode section) ou aucun message (mode sujet). Deux boutons copient la liste en mentions ou en BBCode.
 - **Sujet sans réponse suffisante** (mode section) : le membre a ouvert un sujet, sans le nombre de réponses requis.
-- **Absences signalées** : membres ayant ouvert un sujet dans un forum d'`absences` pendant la période.
-- **Inscrits pendant la période**.
+- **Absences signalées** : membres ayant signalé une absence pendant la période.
+- **Inscrits depuis le…** : membres exemptés par le délai des nouveaux inscrits.
 - **À jour**, avec le lien vers le ou les sujets.
 - **Archivage** : la liste des sujets de la section (ou le sujet unique), avec des cases à cocher. Les annonces et post-it sont décochés d'office. Le bouton « Déplacer » demande confirmation.
 
@@ -81,7 +87,8 @@ Le formulaire propose trois champs : « Activités RP » (section ou sujet), « 
 | `activites` | `''` | valeur proposée pour « Activités RP » |
 | `archive` | `''` | valeur proposée pour « Archivage » |
 | `reponses` | `1` | réponses requises dans un sujet d'activité |
-| `absences` | `[]` | forums des absences |
+| `absences` | `''` | valeur proposée pour « Absences » (texte ou liste) |
+| `nouveaux` | `null` | valeur proposée pour le délai des nouveaux inscrits, en jours |
 | `periode` | `'mois'` | début proposé : le 1er du mois, ou un nombre de jours |
 | `membres.groupes` | `[]` | restreindre le recensement à ces groupes |
 | `exclure.groupes` | `[]` | groupes ignorés (staff, PNJ, comptes partagés…) |
